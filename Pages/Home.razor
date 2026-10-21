@@ -1,0 +1,81 @@
+﻿@page "/"
+@using BlazorWasmBrasilApiCep.Services
+@inject CepService CepService
+
+<PageTitle>Consulta CEP</PageTitle>
+
+<h3>Consulta CEP</h3>
+
+<div class="mb-3">
+    <label>CEP:</label>
+    <input class="form-control" @bind="cepDigitado" placeholder="Digite o CEP (Ex: 30130010)" />
+</div>
+
+<button class="btn btn-primary" @onclick="BuscarCep">
+    Buscar
+</button>
+
+@if (!string.IsNullOrWhiteSpace(mensagemErro))
+{
+    <div class="alert alert-danger mt-3">
+        @mensagemErro
+    </div>
+}
+
+@if (cepEncontrado != null)
+{
+    <div class="card mt-3">
+        <div class="card-body">
+
+            <p><strong>CEP:</strong> @cepEncontrado.cep</p>
+
+            <p><strong>Estado:</strong> @cepEncontrado.state</p>
+
+            <p><strong>Cidade:</strong> @cepEncontrado.city</p>
+
+            <p><strong>Bairro:</strong> @cepEncontrado.neighborhood</p>
+
+            <p><strong>Rua:</strong> @cepEncontrado.street</p>
+
+            <p><strong>Serviço:</strong> @cepEncontrado.service</p>
+
+            <hr />
+
+            <h5>Dados do IBGE</h5>
+
+            <p><strong>Cidade IBGE:</strong>@cepEncontrado.ibge?.city</p>
+
+            <p><strong>Estado IBGE:</strong>@cepEncontrado.ibge?.state</p>
+
+        </div>
+    </div>
+}
+
+@code {
+
+    private string cepDigitado = string.Empty;
+
+    private Models.Cep? cepEncontrado;
+
+    private string mensagemErro = string.Empty;
+
+    private async Task BuscarCep()
+    {
+        mensagemErro = string.Empty;
+
+         // Validação
+    if (string.IsNullOrWhiteSpace(cepDigitado) ||
+        cepDigitado.Length != 8)
+    {
+        mensagemErro = "Informe um CEP válido com 8 dígitos.";
+        return;
+    }
+
+        cepEncontrado = await CepService.BuscarCepAsync(cepDigitado);
+
+        if (cepEncontrado == null)
+        {
+            mensagemErro = "CEP não encontrado.";
+        }
+    }
+}
